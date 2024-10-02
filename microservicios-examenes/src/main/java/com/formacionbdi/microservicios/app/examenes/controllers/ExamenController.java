@@ -2,6 +2,7 @@ package com.formacionbdi.microservicios.app.examenes.controllers;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.formacionbdi.microservicios.app.examenes.services.ExamenService;
 import com.formacionbdi.microservicios.commons.controllers.CommonController;
 import com.formacionbdi.microservicios.commons.examenes.model.entity.Examen;
+import com.formacionbdi.microservicios.commons.examenes.model.entity.Pregunta;
 
 import jakarta.validation.Valid;
 
@@ -42,12 +44,17 @@ public class ExamenController extends CommonController<Examen, ExamenService> {
 		Examen examenDb = o.get();
 		examenDb.setNombre(examen.getNombre());
 
-		examenDb.getPreguntas()
+		List<Pregunta> eliminadas = examenDb.getPreguntas()
 		.stream()
 		.filter(pdb -> !examen.getPreguntas().contains(pdb))
-		.forEach(examenDb::removePregunta);
+		.collect(Collectors.toList());
+		
+		eliminadas.forEach(examenDb::removePregunta);
 		
 		examenDb.setPreguntas(examen.getPreguntas());
+		examenDb.setAsignaturaHija(examen.getAsignaturaHija());
+		examenDb.setAsignaturaPadre(examen.getAsignaturaPadre());
+		
 		return ResponseEntity.status(HttpStatus.CREATED).body(service.save(examenDb));
 	}
 	
